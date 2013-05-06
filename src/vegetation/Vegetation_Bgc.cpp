@@ -683,8 +683,9 @@ double Vegetation_Bgc::getKr(const double & vegc, const int & ipart){
   	double kr  = 0.;
   	double kra = calpar.kra;
   	double krb = calpar.krb[ipart];
-  
+
   	kr = exp((kra*vegc)+krb);	
+
   	return kr;
 };
 
