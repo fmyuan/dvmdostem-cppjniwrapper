@@ -182,14 +182,15 @@ void Vegetation_Bgc::prepareIntegration(const bool &nfeedback){
 
 	for (int i=0; i<NUM_PFT_PART; i++){
 		// assuming 'calpar.cfall' is the max. monthly fraction, we need to modify them for specific PFT types
+		double ncfall = 1.; // n:c ratio of litter-falling: 0 - 1.0, which determines N resorption
+		if (calpar.cfall[i]>0.) ncfall = fmin(1.0, calpar.nfall[i]/calpar.cfall[i]);
 		if (cd->m_veg.ifdeciwoody[ipft]) {
 			calpar.cfall[I_leaf] = 1.0;     // for deciduous woody species, leaf max. falling fraction is 1.0; stem/root will take the calibrated.
-			calpar.nfall[I_leaf] = 1.0;
 		}
 		if (!cd->m_veg.ifperenial[ipft]) {
 			calpar.cfall[i] = 1.0;     // for annual species, leaf/stem/root max. falling/dying fraction is 1.0, no matter what calibrated
-			calpar.nfall[i] = 1.0;
 		}
+		calpar.nfall[i] = ncfall*calpar.cfall[i]; // this will limit nfall not greater than cfall.
  	}
 	// assuming 'calpar.cfall' is the max. monthly fraction, and allowing the following seasonal variation
 	fltrfall = 1.;              // non-growing season, max. litterfall assumed
@@ -265,13 +266,13 @@ void Vegetation_Bgc::delta(){
 	double innppall = fmax(0., ingppall-rm)/(1.0+calpar.frg);  // if C assimilation available, first goes to maintaince respiration
 
 	// NPP allocation to leaf estimated first
-  	double nppl = dleafc/(1.0+calpar.frg);
+  	double nppl = dleafc;   // this is the potential estimated above in 'prepareIntegration()'
   	del_a2v.innpp[I_leaf] = fmin(nppl, innppall);    // leaf has the second priority for C assimilation
   	del_v2a.rg[I_leaf] = calpar.frg * del_a2v.innpp[I_leaf];
   	double npprgl = del_a2v.innpp[I_leaf]+del_v2a.rg[I_leaf];
 
   	// the rest goes to stem/root, assuming equal priority
-  	innppall = fmax(0., ingppall-rm-npprgl)/(1.0+calpar.frg);
+  	double innpprest = fmax(0., ingppall-rm-npprgl)/(1.0+calpar.frg);
   	double cpartrest = 0.;
 	for (int i=I_leaf+1; i<NUM_PFT_PART; i++){
 		cpartrest +=bgcpar.cpart[i];
@@ -280,8 +281,8 @@ void Vegetation_Bgc::delta(){
 	for (int i=I_leaf+1; i<NUM_PFT_PART; i++){
 		del_a2v.innpp[i] = 0.;
 		del_v2a.rg[i]    = 0.;
-		if (cpartrest>0. && innppall>0.) {
-			del_a2v.innpp[i] = innppall *bgcpar.cpart[i]/cpartrest;
+		if (cpartrest>0. && innpprest>0.) {
+			del_a2v.innpp[i] = innpprest *bgcpar.cpart[i]/cpartrest;
 			del_v2a.rg[i]    = calpar.frg * del_a2v.innpp[i];
 		}
 	}
@@ -319,7 +320,7 @@ void Vegetation_Bgc::deltanfeed(){
 			                                                       // they absorb N mainly from wet-deposition, and could from substrate (soil) through co-existed plants, or from biofixation
 		}
 	  	if (del_soi2v.innuptake < 0.0) del_soi2v.innuptake = 0.0;
-	  	double avln = bd->m_soid.avlnsum;   // NOTE: 'avln' already updated in 'Soil_bgc' with N i/o and mineralization (? - need careful checking here???)
+	  	double avln = totrzavln;   // NOTE: 'totrzavln' already updated in calling 'getNuptake()' above
 	  	if (del_soi2v.innuptake > 0.95*avln) del_soi2v.innuptake = 0.95*avln;
 
 		// N litterfall and accompanying resorbtion
@@ -331,7 +332,6 @@ void Vegetation_Bgc::deltanfeed(){
 			} else {
 				del_v2soi.ltrfaln[i] = 0.;
 			}
-
 
 		}
 
@@ -359,7 +359,7 @@ void Vegetation_Bgc::deltanfeed(){
 			}
 		}
 
-		//N requirements if fully no N limitation
+		//N requirements for new growth if fully no N limitation
 		double nrequireall = 0.0;
 		double nrequire[NUM_PFT_PART];
 		for (int i=0; i<NUM_PFT_PART; i++){
@@ -431,9 +431,19 @@ void Vegetation_Bgc::deltanfeed(){
 				nppall += del_a2v.npp[i];
 			}
 
-			double inprodcn = nppall / nsupply;
+			//N update down-regulation
+			double inprodcn = nppall/fmax(1.e-8, nsupply);
+			double cneven = nppall/fmax(1.e-8, nrequireall);
+			double nmin = 0.;
+			for (int i=0; i<NUM_PFT_PART; i++){
+				if (del_a2v.npp[i]>1.e-8) nmin += del_a2v.npp[i]/bgcpar.c2nmin[i];
+			}
+			double cnmin = nppall/fmax(1.e-8, nmin);
 
-		  	tempnuptake  *= (inprodcn * (inprodcn - 2*nppall/fmax(1.e-8, nrequireall)));  //Yuan: from E.E. 2009 paper, seems not correct
+		  	double nadj = (inprodcn-cnmin)*(inprodcn-2.0*cneven+cnmin);
+		  	nadj /= ((inprodcn-cnmin)*(inprodcn-2.0*cneven+cnmin)-pow(inprodcn-cneven, 2.0));
+
+		  	tempnuptake *=nadj;
 		  	if (tempnuptake< 0.0 ) {tempnuptake = 0.0; }
 
 		  	// if N require even less than labile N + resorbed N
@@ -683,9 +693,8 @@ double Vegetation_Bgc::getKr(const double & vegc, const int & ipart){
   	double kr  = 0.;
   	double kra = calpar.kra;
   	double krb = calpar.krb[ipart];
-
+  
   	kr = exp((kra*vegc)+krb);	
-
   	return kr;
 };
 
@@ -746,12 +755,10 @@ double Vegetation_Bgc::getNuptake(const double & foliage, const double & raq10,
 
 	double totrz = 0.;           // total root zone thickness
 	double meanrzksoil = 0.;     // N uptake factor related to root zone liq water
-
 	double totrzliq    = 0.;     // root zone liq water content for N
-	double totrzavln   = 0.;     // root zone avaliable N concent for N uptake
-
 	double totfrootfrac= 0.;     // pft's fraction of roots of all PFTs
 
+	totrzavln   = 0.;     // root zone avaliable N concent for N uptake
 	for(int il =0; il<cd->m_soil.numsl; il++){
 		if (cd->m_soil.frootfrac[il][ipft]> 0.) {
 			totrz +=cd->m_soil.dz[il];

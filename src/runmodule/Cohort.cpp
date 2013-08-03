@@ -148,12 +148,17 @@ void Cohort::setProcessData(EnvData * alledp, BgcData * allbdp, FirData *fdp){
 //re-initializing for a new community of all PFTs sharing same atm/snow-soil domains within a grid
 void Cohort::initStatePar() {
 
+	//
+	if (md->initmode>=3){
+		cd.yrsdist = resid.yrsdist;
+	}
+
  	// FOR VEGETATION
 	//vegetation dimension/structure
 	veg.initializeParameter();
 	if(md->initmode<3){      // from 'chtlu' or 'sitein'
 		veg.initializeState();
-	} else if(md->initmode==3){     // initmode  =3: restart
+	} else {     // initmode  >=3: restart
 		veg.initializeState5restart(&resid);
 	}
 
@@ -224,7 +229,7 @@ void Cohort::initStatePar() {
 		soilbgc.initializeState();
 
 
-	} else {    //restart
+	} else {    // initmode>=3: restart
 
 		// set-up the snow-soil structure from restart data
  		ground.initLayerStructure5restart(&cd.d_snow, &cd.m_soil, &resid);   //snow updated daily, while soil dimension at monthly
@@ -623,7 +628,7 @@ void Cohort::updateMonthly_Fir(const int & yrind, const int & currmind){
 		assignSoilBd2pfts_monthly();
 
 		// update 'cd'
-		cd.yrsdist = 0;
+		cd.yrsdist = 0.;
 		ground.retrieveSnowDimension(&cd.d_snow);
 		ground.retrieveSoilDimension(&cd.m_soil);
 		cd.d_soil = cd.m_soil;
@@ -828,6 +833,7 @@ void Cohort::assignAtmEd2pfts_daily(){
     	if (cd.d_veg.vegcov[ip]>0.){
     		ed[ip].d_atms = edall->d_atms;
     		ed[ip].d_atmd = edall->d_atmd;
+
     		ed[ip].d_a2l  = edall->d_a2l;
     	}
 	}

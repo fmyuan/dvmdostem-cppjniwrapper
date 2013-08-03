@@ -7492,6 +7492,45 @@ SWIGEXPORT jdoubleArray JNICALL Java_TEMJNI_temcoreJNI_RestartData_1ICEsoil_1get
 }
 
 
+SWIGEXPORT void JNICALL Java_TEMJNI_temcoreJNI_RestartData_1FROZENsoil_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jintArray jarg2) {
+  RestartData *arg1 = (RestartData *) 0 ;
+  int *arg2 ;
+  jint *jarr2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(RestartData **)&jarg1; 
+  if (jarg2 && jenv->GetArrayLength(jarg2) != MAX_SOI_LAY) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "incorrect array size");
+    return ;
+  }
+  if (!SWIG_JavaArrayInInt(jenv, &jarr2, &arg2, jarg2)) return ; 
+  {
+    size_t ii;
+    int *b = (int *) arg1->FROZENsoil;
+    for (ii = 0; ii < (size_t)MAX_SOI_LAY; ii++) b[ii] = *((int *) arg2 + ii);
+  }
+  SWIG_JavaArrayArgoutInt(jenv, jarr2, arg2, jarg2); 
+  delete [] arg2; 
+}
+
+
+SWIGEXPORT jintArray JNICALL Java_TEMJNI_temcoreJNI_RestartData_1FROZENsoil_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jintArray jresult = 0 ;
+  RestartData *arg1 = (RestartData *) 0 ;
+  int *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(RestartData **)&jarg1; 
+  result = (int *)(int *) ((arg1)->FROZENsoil);
+  jresult = SWIG_JavaArrayOutInt(jenv, result, MAX_SOI_LAY); 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_TEMJNI_temcoreJNI_RestartData_1FROZENFRACsoil_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jdoubleArray jarg2) {
   RestartData *arg1 = (RestartData *) 0 ;
   double *arg2 ;
@@ -17585,6 +17624,45 @@ SWIGEXPORT void JNICALL Java_TEMJNI_temcoreJNI_delete_1soistate_1dim(JNIEnv *jen
   (void)jcls;
   arg1 = *(soistate_dim **)&jarg1; 
   delete arg1;
+}
+
+
+SWIGEXPORT void JNICALL Java_TEMJNI_temcoreJNI_soistate_1env_1frozen_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jdoubleArray jarg2) {
+  soistate_env *arg1 = (soistate_env *) 0 ;
+  double *arg2 ;
+  jdouble *jarr2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(soistate_env **)&jarg1; 
+  if (jarg2 && jenv->GetArrayLength(jarg2) != MAX_SOI_LAY) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "incorrect array size");
+    return ;
+  }
+  if (!SWIG_JavaArrayInDouble(jenv, &jarr2, &arg2, jarg2)) return ; 
+  {
+    size_t ii;
+    double *b = (double *) arg1->frozen;
+    for (ii = 0; ii < (size_t)MAX_SOI_LAY; ii++) b[ii] = *((double *) arg2 + ii);
+  }
+  SWIG_JavaArrayArgoutDouble(jenv, jarr2, arg2, jarg2); 
+  delete [] arg2; 
+}
+
+
+SWIGEXPORT jdoubleArray JNICALL Java_TEMJNI_temcoreJNI_soistate_1env_1frozen_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jdoubleArray jresult = 0 ;
+  soistate_env *arg1 = (soistate_env *) 0 ;
+  double *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(soistate_env **)&jarg1; 
+  result = (double *)(double *) ((arg1)->frozen);
+  jresult = SWIG_JavaArrayOutDouble(jenv, result, MAX_SOI_LAY); 
+  return jresult;
 }
 
 
@@ -32318,6 +32396,62 @@ SWIGEXPORT jint JNICALL Java_TEMJNI_temcoreJNI_ModelData_1act_1clmno_1get(JNIEnv
   (void)jarg1_;
   arg1 = *(ModelData **)&jarg1; 
   result = (int) ((arg1)->act_clmno);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_TEMJNI_temcoreJNI_ModelData_1act_1clmyr_1beg_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  ModelData *arg1 = (ModelData *) 0 ;
+  int arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(ModelData **)&jarg1; 
+  arg2 = (int)jarg2; 
+  if (arg1) (arg1)->act_clmyr_beg = arg2;
+}
+
+
+SWIGEXPORT jint JNICALL Java_TEMJNI_temcoreJNI_ModelData_1act_1clmyr_1beg_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  ModelData *arg1 = (ModelData *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(ModelData **)&jarg1; 
+  result = (int) ((arg1)->act_clmyr_beg);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_TEMJNI_temcoreJNI_ModelData_1act_1clmyr_1end_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  ModelData *arg1 = (ModelData *) 0 ;
+  int arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(ModelData **)&jarg1; 
+  arg2 = (int)jarg2; 
+  if (arg1) (arg1)->act_clmyr_end = arg2;
+}
+
+
+SWIGEXPORT jint JNICALL Java_TEMJNI_temcoreJNI_ModelData_1act_1clmyr_1end_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  ModelData *arg1 = (ModelData *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(ModelData **)&jarg1; 
+  result = (int) ((arg1)->act_clmyr_end);
   jresult = (jint)result; 
   return jresult;
 }

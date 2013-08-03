@@ -42,7 +42,7 @@ void TemperatureUpdator::updateTemps(const double & tdrv, Layer *fstvalidl,	Laye
 		cap[i] = MISSING_D;
 		tid[i] = MISSING_D;
 		tld[i] = MISSING_D;
-		type[i]= MISSING_I;
+		type[i]= MISSING_D;
 		s[i]   = MISSING_D;
 		e[i]   = MISSING_D;
 		tii[i] = MISSING_D;
